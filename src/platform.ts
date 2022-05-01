@@ -48,18 +48,32 @@ export class SPHomebridgePlatform implements DynamicPlatformPlugin {
     this.accessories.push(accessory);
   }
 
+  async getSonosDevices() {
+
+    const devices = [];
+    const sonos = new AsyncDeviceDiscovery();
+
+    sonos.discoverMultiple().then(devices => {
+      devices.forEach(device => {
+        device.getName().then(name => {
+          this.log.info('Discovered: ' + name);
+        });
+
+
+      });
+    });
+
+
+
+  }
+
   /**
    * This is an example method showing how to register discovered accessories.
    * Accessories must only be registered once, previously created accessories
    * must not be registered again to prevent "duplicate UUID" errors.
    */
   discoverDevices() {
-    const discovery = new AsyncDeviceDiscovery();
-    discovery.discover().then(result => {
-      result.device.getName().then(name => {
-        this.log.info(name);
-      });
-    });
+
 
     // EXAMPLE ONLY
     // A real plugin you would discover accessories from the local network, cloud services
