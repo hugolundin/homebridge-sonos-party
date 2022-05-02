@@ -48,25 +48,6 @@ export class SPHomebridgePlatform implements DynamicPlatformPlugin {
     this.accessories.push(accessory);
   }
 
-  async getSonosDevices() {
-
-    const devices = [];
-    const sonos = new AsyncDeviceDiscovery();
-
-    sonos.discoverMultiple().then(devices => {
-      devices.forEach(device => {
-        device.getName().then(name => {
-          this.log.info('Discovered: ' + name);
-        });
-
-
-      });
-    });
-
-
-
-  }
-
   /**
    * This is an example method showing how to register discovered accessories.
    * Accessories must only be registered once, previously created accessories
@@ -74,18 +55,22 @@ export class SPHomebridgePlatform implements DynamicPlatformPlugin {
    */
   discoverDevices() {
 
+    //const sonos = new Sonos('10.0.0.9', 1400, null);
+    // sonos.getAllGroups().then(groups => {
+    //   this.log.error(JSON.stringify(groups, null, 2));
+    // });
+    // sonos.getZoneAttrs().then(info => {
+    //   this.log.error(JSON.stringify(info, null, 2));
+    // });
 
-    // EXAMPLE ONLY
-    // A real plugin you would discover accessories from the local network, cloud services
-    // or a user-defined array in the platform config.
+    // sonos.zoneGroupTopologyService().GetZoneGroupAttributes().then(attributes => {
+    //   this.log.error('All Zone attributes %s', JSON.stringify(attributes, null, 2));
+    // }).catch(this.log.error);
+
     const exampleDevices = [
       {
         exampleUniqueId: 'ABCD',
-        exampleDisplayName: 'Bedroom',
-      },
-      {
-        exampleUniqueId: 'EFGH',
-        exampleDisplayName: 'Kitchen',
+        exampleDisplayName: 'Sonos speakers',
       },
     ];
 

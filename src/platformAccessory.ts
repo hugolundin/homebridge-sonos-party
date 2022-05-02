@@ -1,6 +1,7 @@
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 
 import { SPHomebridgePlatform } from './platform';
+import { Sonos, Listener } from 'sonos';
 
 /**
  * Platform Accessory
@@ -9,15 +10,6 @@ import { SPHomebridgePlatform } from './platform';
  */
 export class SPHomebridgePlatformAccessory {
   private service: Service;
-
-  /**
-   * These are just used to create a working example
-   * You should implement your own code to track the state of your accessory
-   */
-  private exampleStates = {
-    On: false,
-    Brightness: 100,
-  };
 
   constructor(
     private readonly platform: SPHomebridgePlatform,
@@ -45,10 +37,6 @@ export class SPHomebridgePlatformAccessory {
     this.service.getCharacteristic(this.platform.Characteristic.On)
       .onSet(this.setOn.bind(this))                // SET - bind to the `setOn` method below
       .onGet(this.getOn.bind(this));               // GET - bind to the `getOn` method below
-
-    // register handlers for the Brightness Characteristic
-    this.service.getCharacteristic(this.platform.Characteristic.Brightness)
-      .onSet(this.setBrightness.bind(this));       // SET - bind to the 'setBrightness` method below
 
     /**
      * Creating multiple services of the same type.
@@ -89,6 +77,19 @@ export class SPHomebridgePlatformAccessory {
     //   this.platform.log.debug('Triggering motionSensorOneService:', motionDetected);
     //   this.platform.log.debug('Triggering motionSensorTwoService:', !motionDetected);
     // }, 10000);
+
+    Listener.on('ZonesChanged', groups => {
+      this.platform.log.error('ZoneGroupTopology');
+
+      groups.forEach(group => {
+        if (group.Name.includes('+ 2')) {
+          this.service.updateCharacteristic(this.platform.Characteristic.On, true);
+          return;
+        }
+      });
+
+      this.service.updateCharacteristic(this.platform.Characteristic.On, false);
+    });
   }
 
   /**
@@ -97,7 +98,7 @@ export class SPHomebridgePlatformAccessory {
    */
   async setOn(value: CharacteristicValue) {
     // implement your own code to turn your device on/off
-    this.exampleStates.On = value as boolean;
+    //this.exampleStates.On = value as boolean;
 
     this.platform.log.debug('Set Characteristic On ->', value);
   }
@@ -116,26 +117,27 @@ export class SPHomebridgePlatformAccessory {
    * this.service.updateCharacteristic(this.platform.Characteristic.On, true)
    */
   async getOn(): Promise<CharacteristicValue> {
-    // implement your own code to check if the device is on
-    const isOn = this.exampleStates.On;
+    const sonos = new Sonos('10.0.0.9', 1400, null);
+    let status = false;
 
-    this.platform.log.debug('Get Characteristic On ->', isOn);
+    sonos.getAllGroups().then(groups => {
+      groups.forEach(group => {
+        this.platform.log.error(group.Name);
+
+        if (group.Name.includes('+ 2')) {
+          this.platform.log.error('match!');
+          status = true;
+          this.service.updateCharacteristic(this.platform.Characteristic.On, true);
+          return;
+        }
+      });
+    });
 
     // if you need to return an error to show the device as "Not Responding" in the Home app:
     // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
-
-    return isOn;
+    return status;
   }
-
-  /**
-   * Handle "SET" requests from HomeKit
-   * These are sent when the user changes the state of an accessory, for example, changing the Brightness
-   */
-  async setBrightness(value: CharacteristicValue) {
-    // implement your own code to set the brightness
-    this.exampleStates.Brightness = value as number;
-
-    this.platform.log.debug('Set Characteristic Brightness -> ', value);
-  }
-
 }
+
+
+// service.updateCharacteristic(Characteristic.On, true/false);
