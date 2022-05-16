@@ -1,7 +1,7 @@
 import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
-import { SPHomebridgePlatformAccessory } from './platformAccessory';
+import { SonosPartyHomebridgePlatformAccessory } from './platformAccessory';
 
 import { Sonos, AsyncDeviceDiscovery } from 'sonos';
 
@@ -11,12 +11,14 @@ import { Sonos, AsyncDeviceDiscovery } from 'sonos';
  * This class is the main constructor for your plugin, this is where you should
  * parse the user config and discover/register accessories with Homebridge.
  */
-export class SPHomebridgePlatform implements DynamicPlatformPlugin {
+export class SonosPartyHomebridgePlatform implements DynamicPlatformPlugin {
   public readonly Service: typeof Service = this.api.hap.Service;
   public readonly Characteristic: typeof Characteristic = this.api.hap.Characteristic;
 
   // this is used to track restored cached accessories
   public readonly accessories: PlatformAccessory[] = [];
+
+  public sonos?: Sonos;
 
   constructor(
     public readonly log: Logger,
@@ -25,6 +27,12 @@ export class SPHomebridgePlatform implements DynamicPlatformPlugin {
   ) {
 
     this.log.error('Finished initializing platform:', this.config.name);
+
+    const discovery = new AsyncDeviceDiscovery();
+    discovery.discover().then(result => {
+      this.sonos = result.device;
+      this.log.info(result.model);
+    });
 
     // When this event is fired it means Homebridge has restored all cached accessories from disk.
     // Dynamic Platform plugins should only register new accessories after this event was fired,
@@ -55,18 +63,6 @@ export class SPHomebridgePlatform implements DynamicPlatformPlugin {
    */
   discoverDevices() {
 
-    //const sonos = new Sonos('10.0.0.9', 1400, null);
-    // sonos.getAllGroups().then(groups => {
-    //   this.log.error(JSON.stringify(groups, null, 2));
-    // });
-    // sonos.getZoneAttrs().then(info => {
-    //   this.log.error(JSON.stringify(info, null, 2));
-    // });
-
-    // sonos.zoneGroupTopologyService().GetZoneGroupAttributes().then(attributes => {
-    //   this.log.error('All Zone attributes %s', JSON.stringify(attributes, null, 2));
-    // }).catch(this.log.error);
-
     const exampleDevices = [
       {
         exampleUniqueId: 'ABCD',
@@ -96,7 +92,7 @@ export class SPHomebridgePlatform implements DynamicPlatformPlugin {
 
         // create the accessory handler for the restored accessory
         // this is imported from `platformAccessory.ts`
-        new SPHomebridgePlatformAccessory(this, existingAccessory);
+        new SonosPartyHomebridgePlatformAccessory(this, existingAccessory);
 
         // it is possible to remove platform accessories at any time using `api.unregisterPlatformAccessories`, eg.:
         // remove platform accessories when no longer present
@@ -115,7 +111,7 @@ export class SPHomebridgePlatform implements DynamicPlatformPlugin {
 
         // create the accessory handler for the newly create accessory
         // this is imported from `platformAccessory.ts`
-        new SPHomebridgePlatformAccessory(this, accessory);
+        new SonosPartyHomebridgePlatformAccessory(this, accessory);
 
         // link the accessory to your platform
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);

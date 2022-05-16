@@ -1,6 +1,6 @@
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 
-import { SPHomebridgePlatform } from './platform';
+import { SonosPartyHomebridgePlatform } from './platform';
 import { Sonos, Listener } from 'sonos';
 
 /**
@@ -8,11 +8,11 @@ import { Sonos, Listener } from 'sonos';
  * An instance of this class is created for each accessory your platform registers
  * Each accessory may expose multiple services of different service types.
  */
-export class SPHomebridgePlatformAccessory {
+export class SonosPartyHomebridgePlatformAccessory {
   private service: Service;
 
   constructor(
-    private readonly platform: SPHomebridgePlatform,
+    private readonly platform: SonosPartyHomebridgePlatform,
     private readonly accessory: PlatformAccessory,
   ) {
 
@@ -117,21 +117,22 @@ export class SPHomebridgePlatformAccessory {
    * this.service.updateCharacteristic(this.platform.Characteristic.On, true)
    */
   async getOn(): Promise<CharacteristicValue> {
-    const sonos = new Sonos('10.0.0.9', 1400, null);
     let status = false;
 
-    sonos.getAllGroups().then(groups => {
-      groups.forEach(group => {
-        this.platform.log.error(group.Name);
+    if (this.platform.sonos) {
+      this.platform.sonos.getAllGroups().then(groups => {
+        groups.forEach(group => {
+          this.platform.log.error(group.Name);
 
-        if (group.Name.includes('+ 2')) {
-          this.platform.log.error('match!');
-          status = true;
-          this.service.updateCharacteristic(this.platform.Characteristic.On, true);
-          return;
-        }
+          if (group.Name.includes('+ 2')) {
+            this.platform.log.error('match!');
+            status = true;
+            this.service.updateCharacteristic(this.platform.Characteristic.On, true);
+            return;
+          }
+        });
       });
-    });
+    }
 
     // if you need to return an error to show the device as "Not Responding" in the Home app:
     // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);

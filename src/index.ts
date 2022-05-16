@@ -1,11 +1,11 @@
 import { API } from 'homebridge';
 
 import { PLATFORM_NAME } from './settings';
-import { SPHomebridgePlatform } from './platform';
+import { SonosPartyHomebridgePlatform } from './platform';
 
 /**
  * This method registers the platform with Homebridge
  */
 export = (api: API) => {
-  api.registerPlatform(PLATFORM_NAME, SPHomebridgePlatform);
+  api.registerPlatform(PLATFORM_NAME, SonosPartyHomebridgePlatform);
 };
